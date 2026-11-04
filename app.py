@@ -36,7 +36,7 @@ def check_url():
         if found:
             return jsonify({
                 "safe": False,
-                "message": "XAVFLI HAVOLA ANIQLANDI"
+               "message": "XAVFLI! Fishing bazasida tasdiqlangan havola."
             })
 
         return jsonify({
