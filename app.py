@@ -38,7 +38,7 @@ def check_url():
         result = response.json()
 
         if response.status_code != 200:
-            return jsonify({"error": "Tekshiruv xatosi"}), 502
+          return jsonify({"error": f"Google API xatosi: {response.status_code}", "detail": result}), 502 
 
         if result.get("threat"):
             return jsonify({
