@@ -2,7 +2,7 @@ import os
 import requests
 from flask import Flask, request, jsonify
 
-app = Flask(name)
+app = Flask(__name__)
 
 @app.route("/", methods=["GET"])
 def home():
