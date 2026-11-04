@@ -1,4 +1,3 @@
-import os
 import requests
 from flask import Flask, request, jsonify
 
@@ -14,34 +13,27 @@ def check_url():
     url = data.get("url", "").strip()
 
     if not url.startswith(("http://", "https://")):
-        return jsonify({"error": "URL noto‘g‘ri"}), 400
-
-    api_key = os.environ.get("WEBRISK_API_KEY")
-    if not api_key:
-        return jsonify({"error": "API kaliti sozlanmagan"}), 500
+        return jsonify({
+            "safe": False,
+            "message": "URL manzili noto‘g‘ri"
+        }), 400
 
     try:
         response = requests.get(
-            "https://webrisk.googleapis.com/v1/uris:search",
-            params=[
-                ("threatTypes", "MALWARE"),
-                ("threatTypes", "SOCIAL_ENGINEERING"),
-                ("threatTypes", "UNWANTED_SOFTWARE"),
-                ("uri", url),
-                ("key", api_key)
-            ],
+            "https://openphish.eu/api/check",
+            params={"url": url},
             timeout=15
         )
 
-        result = response.json()
-
         if response.status_code != 200:
             return jsonify({
-                "error": f"Google API xatosi: {response.status_code}",
-                "detail": result
+                "error": f"OpenPhish API xatosi: {response.status_code}"
             }), 502
 
-        if result.get("threat"):
+        result = response.json()
+        found = result.get("found", False)
+
+        if found:
             return jsonify({
                 "safe": False,
                 "message": "XAVFLI HAVOLA ANIQLANDI"
@@ -49,8 +41,10 @@ def check_url():
 
         return jsonify({
             "safe": True,
-            "message": "Ma'lumotlar bazasida xavf topilmadi"
+            "message": "Bazadan fishing havolasi topilmadi"
         })
 
-    except requests.RequestException:
-        return jsonify({"error": "Internet bilan aloqa xatosi"}), 502
+    except (requests.RequestException, ValueError):
+        return jsonify({
+            "error": "Tekshirish xizmatiga ulanishda xatolik"
+        }), 502
